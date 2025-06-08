@@ -62,18 +62,22 @@ function formatSingleCryptoMessage(crypto) {
     const header = `🔴 \\[${symbol}\] ${name}\n\n`;
 
     let message = `🚨 *New Token Listed on CMC* 🚨\n\n` + header +
-                  `📛 Coin Name:  ${name}\n` +
-                  `📈 Price:  ${price}\n` +
-                  `💸 Volume (24h):  ${volume24h}\n`;
+                  `📛 *Coin Name:*   ${name}\n` +
+                  `📈 *Price:*       ${price}\n` +
+                  `💸 *Volume:*   ${volume24h}\n`;
 
     if (tokenAddress) {
-        message += `🔗 Address:\n\`${tokenAddress}\`\n`;
+        message += `🔗 *Address:* \n\`${tokenAddress}\`\n`;
     }
 
     message += `\n`; // Add space for readability
 
-    message += `🌐 Platform:  ${platform}\n` +
-               `🕒 Time:  ${timeAddedUTC}`;
+    message += `🌐 *Platform:*    ${platform}\n` +
+               `🕒 *Time:*           ${timeAddedUTC}\n`;
+
+    message += `\n`; // Add space for readability
+    
+    message+= `_Insider info received for possible CMC listing. Coin not listed anywhere yet (listing in 15 minutes approx). Buy now to be first (first pump)_.`
 
     return message;
 }

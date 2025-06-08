@@ -112,3 +112,15 @@ async function checkForNewToken() {
 // =====================
 checkForNewToken(); // Run immediately on startup
 setInterval(checkForNewToken, CHECK_INTERVAL);
+
+const http = require("http");
+
+const PORT = process.env.PORT || 3000;
+
+// Dummy server to keep Render happy
+http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("Bot is running");
+}).listen(PORT, () => {
+  console.log(`Dummy server listening on port ${PORT}`);
+});

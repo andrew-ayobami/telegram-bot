@@ -9,9 +9,8 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHANNEL_USERNAME = process.env.TELEGRAM_CHANNEL_USERNAME;
 const CMC_API_KEY = process.env.CMC_API_KEY;
 
-
 // How often to check for new tokens (in milliseconds)
-const CHECK_INTERVAL = 10 * 60 * 1000; // every 10 minutes
+const CHECK_INTERVAL = 10 * 60 * 1000; // every 6 minutes
 
 // 🚀 Initialize Telegram Bot
 // =====================
@@ -52,8 +51,10 @@ function formatSingleCryptoMessage(crypto) {
     const symbol = crypto.symbol;
     const price = crypto.quote?.USD?.price ? `$${parseFloat(crypto.quote.USD.price).toFixed(6)}` : 'N/A';
     const volume24h = crypto.quote?.USD?.volume_24h ? `$${parseInt(crypto.quote.USD.volume_24h).toLocaleString()}` : 'N/A';
-    const platform = crypto.platform?.name || 'Unknown';
-    const tokenAddress = crypto.platform?.token_address || null;
+    const platform = crypto.platform?.name || 'Own Blockchain';
+    // Try platform token address first, fall back to contract_address if present
+    const tokenAddress = crypto.platform?.token_address || crypto.contract_address || null;
+
 
     const timeAddedUTC = crypto.date_added
         ? new Date(crypto.date_added).toUTCString().split(' ')[4] + ' UTC'
@@ -63,8 +64,8 @@ function formatSingleCryptoMessage(crypto) {
 
     let message = `🚨 *New Token Listed on CMC* 🚨\n\n` + header +
                   `📛 *Coin Name:*   ${name}\n` +
-                  `📈 *Price:*       ${price}\n` +
-                  `💸 *Volume:*   ${volume24h}\n`;
+                  `📈 *Price:*              ${price}\n` +
+                  `💸 *Volume:*         ${volume24h}\n`;
 
     if (tokenAddress) {
         message += `🔗 *Address:* \n\`${tokenAddress}\`\n`;
@@ -110,7 +111,6 @@ async function checkForNewToken() {
         console.log(`[${new Date().toISOString()}] No new token. Latest already sent.`);
     }
 }
-
 
 // 🕰️ Schedule Checker
 // =====================

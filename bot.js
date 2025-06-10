@@ -60,7 +60,7 @@ function formatSingleCryptoMessage(crypto) {
         ? new Date(crypto.date_added).toUTCString().split(' ')[4] + ' UTC'
         : 'Unknown';
 
-    const header = `🔴 \\[${symbol}\] ${name}\n\n`;
+    const header = `🟢 \\[${symbol}\] ${name}\n\n`;
 
     let message = `🚨 *New Token Listed on CMC* 🚨\n\n` + header +
                   `📛 *Coin Name:*   ${name}\n` +

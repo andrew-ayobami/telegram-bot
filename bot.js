@@ -10,7 +10,7 @@ const TELEGRAM_CHANNEL_USERNAME = process.env.TELEGRAM_CHANNEL_USERNAME;
 const CMC_API_KEY = process.env.CMC_API_KEY;
 
 // How often to check for new tokens (in milliseconds)
-const CHECK_INTERVAL = 10 * 60 * 1000; // every 6 minutes
+const CHECK_INTERVAL = 5 * 60 * 1000; // every 5 minutes
 
 // 🚀 Initialize Telegram Bot
 // =====================

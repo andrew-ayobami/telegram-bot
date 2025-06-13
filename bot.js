@@ -78,7 +78,11 @@ function formatSingleCryptoMessage(crypto) {
 
     message += `\n`; // Add space for readability
     
-    message+= `_Insider info received for possible CMC listing. Coin not listed anywhere yet (listing in 15 minutes approx). Buy now to be first (first pump)_.`
+    message+= `_Insider info received for possible CMC listing. Coin not listed anywhere yet (listing in 15 minutes approx). Buy now to be first (first pump)_.`;
+
+    message += `\n`;
+
+    message += ` \n 📣 Ads, sponsored post, listings and updates available!`;
 
     return message;
 }

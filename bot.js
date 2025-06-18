@@ -79,11 +79,11 @@ function formatSingleCryptoMessage(crypto, fullAlert = true) {
 
     message += `🕒 *Time:*           ${timeAddedUTC}\n\n`;
 
-    message += `_Insider info received for possible CMC listing. Coin not listed anywhere yet (listing in 15 minutes approx). Buy now to be first (first pump)._`;
+    message += `_Insider info received for possible CMC listing. Coin not listed anywhere yet (listing in 15 minutes approx). Buy now to be first (first pump)._ \n`;
 
     message += `\n\n📣 Ads, sponsored post, listings and updates available!`;
    
-    message += `\nIncrease your chance of growth and listing on CoinMarketCap by 99% with ads on the alert channel (insider info)`;
+    message += `\n Increase your chance of growth and listing on CoinMarketCap by 99% with ads on the alert channel (insider info)`;
 
     return message;
 }

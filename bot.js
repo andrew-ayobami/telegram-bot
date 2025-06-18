@@ -91,8 +91,6 @@ function formatSingleCryptoMessage(crypto, fullAlert = true) {
 // =====================
 // 📣 Check for New Token + Send Alert
 // =====================
-const sentTokens = {}; // Store token IDs and alert status (half or full)
-
 async function checkForNewToken() {
     const cryptos = await getRecentlyAddedCryptos();
 
@@ -102,42 +100,46 @@ async function checkForNewToken() {
     }
 
     const latestToken = cryptos[0];
-    const tokenId = latestToken.id;
-    const tokenAddress = latestToken.platform?.token_address || latestToken.contract_address || null;
 
-    // Full data is available
-    const hasFullInfo = tokenAddress && latestToken.platform?.name;
+    if (latestToken.id !== lastSentTokenId) {
+        lastSentTokenId = latestToken.id;
 
-    // If we've already sent the full alert, do nothing
-    if (sentTokens[tokenId] === 'full') {
-        console.log(`[${new Date().toISOString()}] Already sent full alert for: ${latestToken.name}`);
-        return;
-    }
+        const hasAddress = !!(latestToken.platform?.token_address || latestToken.contract_address);
+        const hasPlatform = !!latestToken.platform?.name;
+        const hasFullInfo = hasAddress && hasPlatform;
 
-    // If full info is available but we've only sent half alert before, now send full alert
-    if (hasFullInfo && sentTokens[tokenId] === 'half') {
-        const message = formatSingleCryptoMessage(latestToken, true); // true = full
-        try {
-            await bot.sendMessage(TELEGRAM_CHANNEL_USERNAME, message, { parse_mode: 'Markdown' });
-            console.log(`[${new Date().toISOString()}] ✅ Upgraded to FULL alert for: ${latestToken.name}`);
-            sentTokens[tokenId] = 'full';
-        } catch (err) {
-            console.error('❌ Error sending full alert:', err.message);
+        if (hasFullInfo) {
+            // ✅ Full info already available – send full alert
+            const fullMsg = formatSingleCryptoMessage(latestToken, true);
+            await bot.sendMessage(TELEGRAM_CHANNEL_USERNAME, fullMsg, { parse_mode: 'Markdown' });
+            console.log(`[${new Date().toISOString()}] 🟢 Sent FULL alert for: ${latestToken.name}`);
+        } else {
+            // ⚠️ Partial info – send half alert first
+            const halfMsg = formatSingleCryptoMessage(latestToken, false);
+            await bot.sendMessage(TELEGRAM_CHANNEL_USERNAME, halfMsg, { parse_mode: 'Markdown' });
+            console.log(`[${new Date().toISOString()}] 🟡 Sent HALF alert for: ${latestToken.name}`);
+
+            // 🔁 Check again after 2 minutes
+            setTimeout(async () => {
+                const updatedCryptos = await getRecentlyAddedCryptos();
+                const updatedToken = updatedCryptos[0];
+
+                const stillSameToken = updatedToken?.id === latestToken.id;
+                const updatedHasAddress = !!(updatedToken.platform?.token_address || updatedToken.contract_address);
+                const updatedHasPlatform = !!updatedToken.platform?.name;
+                const hasFullInfoNow = updatedHasAddress && updatedHasPlatform;
+
+                if (stillSameToken && hasFullInfoNow) {
+                    const fullMsg = formatSingleCryptoMessage(updatedToken, true);
+                    await bot.sendMessage(TELEGRAM_CHANNEL_USERNAME, fullMsg, { parse_mode: 'Markdown' });
+                    console.log(`[${new Date().toISOString()}] 🟢 Sent FULL alert for: ${updatedToken.name}`);
+                } else {
+                    console.log(`[${new Date().toISOString()}] 🔁 No full alert needed or token changed.`);
+                }
+            }, 4 * 60 * 1000); // 4 minutes
         }
-        return;
-    }
-
-    // If not sent anything yet
-    if (!sentTokens[tokenId]) {
-        const message = formatSingleCryptoMessage(latestToken, hasFullInfo); // pass whether it's full or half
-        try {
-            await bot.sendMessage(TELEGRAM_CHANNEL_USERNAME, message, { parse_mode: 'Markdown' });
-            sentTokens[tokenId] = hasFullInfo ? 'full' : 'half';
-            const level = hasFullInfo ? 'FULL' : 'HALF';
-            console.log(`[${new Date().toISOString()}] ✅ Sent ${level} alert for: ${latestToken.name}`);
-        } catch (err) {
-            console.error(`❌ Failed to send ${hasFullInfo ? 'full' : 'half'} alert:`, err.message);
-        }
+    } else {
+        console.log(`[${new Date().toISOString()}] No new token. Latest already sent.`);
     }
 }
 

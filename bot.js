@@ -135,6 +135,7 @@ async function checkForNewToken() {
                     console.log(`[${new Date().toISOString()}] 🟢 Sent FULL alert for: ${updatedToken.name}`);
                 } else {
                     console.log(`[${new Date().toISOString()}] 🔁 No full alert needed or token changed.`);
+                    startRetryChecker(latestToken.id, latestToken.name);
                 }
             }, 4 * 60 * 1000); // 4 minutes
         }
@@ -143,6 +144,34 @@ async function checkForNewToken() {
     }
 }
 
+function startRetryChecker(tokenId, tokenName, attempt = 1) {
+    if (attempt > 5) {
+        console.log(`🛑 Gave up checking full details for ${tokenName} after 5 tries.`);
+        return;
+    }
+
+    setTimeout(async () => {
+        const updatedCryptos = await getRecentlyAddedCryptos();
+        const token = updatedCryptos.find(t => t.id === tokenId);
+
+        if (!token) {
+            console.log(`⚠️ Token with ID ${tokenId} no longer found.`);
+            return;
+        }
+
+        const hasAddress = !!(token.platform?.token_address || token.contract_address);
+        const hasPlatform = !!token.platform?.name;
+
+        if (hasAddress && hasPlatform) {
+            const fullMsg = formatSingleCryptoMessage(token, true);
+            await bot.sendMessage(TELEGRAM_CHANNEL_USERNAME, fullMsg, { parse_mode: 'Markdown' });
+            console.log(`[${new Date().toISOString()}] 🟢 FULL alert sent for ${tokenName} on retry #${attempt}`);
+        } else {
+            console.log(`[${new Date().toISOString()}] 🔁 Retry #${attempt} for ${tokenName} – still no full info.`);
+            startRetryChecker(tokenId, tokenName, attempt + 1);
+        }
+    }, 6 * 60 * 1000); // Wait 6 minutes before each retry
+}
 
 // 🕰️ Schedule Checker
 // =====================
